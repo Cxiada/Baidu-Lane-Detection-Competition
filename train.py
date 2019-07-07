@@ -9,9 +9,9 @@ import matplotlib.pyplot as plt
 
 from models.segnet import SegNet
 from models.resnet_unet import ResNet34Unet
-from loss import DiscriminativeLoss
+from models.loss import DiscriminativeLoss
 from Baidureader import BaiduDataset
-from logger import Logger
+from utils.logger import Logger
 from utils.util import label_accuracy_score
 from tqdm import tqdm
 import torchvision.transforms as transforms
@@ -147,7 +147,8 @@ def cv(batch_idx):
 
 if __name__ == "__main__":
    logger = Logger('./logs')
-   train_path = './train.csv'
+   train_path = './data/train.csv'
+   val_path='./data/val.csv'
    transformations = transforms.Compose([
        # transforms.Resize(224),
        transforms.ToTensor(),
@@ -157,7 +158,7 @@ if __name__ == "__main__":
    train_dataset = BaiduDataset(train_path,transformations=transformations, size=SIZE)
    train_dataloader = torch.utils.data.DataLoader(dataset=train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=16)
 
-   val_dataset = BaiduDataset(train_path,transformations=transformations , size=SIZE)
+   val_dataset = BaiduDataset(val_path,transformations=transformations , size=SIZE)
    val_dataloader = torch.utils.data.DataLoader(dataset=val_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=16)
    # model = SegNet(input_ch=INPUT_CHANNELS, output_ch=OUTPUT_CHANNELS).cuda()
    # model = ENet(input_ch=INPUT_CHANNELS, output_ch=OUTPUT_CHANNELS).cuda()
@@ -168,7 +169,7 @@ if __name__ == "__main__":
        print("Loaded model_best.pth")
        model.load_state_dict(torch.load("model_best.pth"))
 
-   pinlv=np.load('Baidu_freq.npy')
+   pinlv=np.load('./data/Baidu_freq.npy')
    weight=(1/np.log(pinlv+1.02))
    weight=torch.from_numpy(weight).cuda().float()
    criterion_ce = torch.nn.CrossEntropyLoss(weight=weight).cuda()
